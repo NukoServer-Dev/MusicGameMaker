@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b13">
+  <title>音ゲーメーカー</title>
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/script.js" defer></script>
+</head>
+
+<body data-theme="dark">
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="音ゲーメーカー ホーム"><span
+          class="brand-word">音ゲーメーカー</span></a>
+      <div class="topbar-right">
+        <div class="theme-switch" aria-label="テーマ切替"><button class="theme-option active" data-theme-choice="dark"
+            aria-label="ダークテーマ" title="ダーク">◐</button><button class="theme-option" data-theme-choice="light"
+            aria-label="ライトテーマ" title="ライト">☼</button></div>
+        <a class="icon-link" href="https://twitter.com/intent/tweet?text=%23%E9%9F%B3%E3%82%B2%E3%83%BC%E3%83%A1%E3%83%BC%E3%82%AB%E3%83%BC%0A%E9%9F%B3%E3%82%B2%E3%83%BC%E3%82%92%E4%BD%9C%E3%82%8C%E3%82%8B%E3%82%B2%E3%83%BC%E3%83%A0%E3%82%92%E8%A6%8B%E3%81%A4%E3%81%91%E3%81%9F%E3%82%88%EF%BC%81%0A%E3%81%9C%E3%81%B2%E9%81%8A%E3%82%93%E3%81%A7%E3%81%BF%E3%81%A6%EF%BC%81%0Ahttps%3A%2F%2Fmusic-game.nuko-server.xyz" target="_blank" rel="noopener noreferrer" aria-label="Xでシェア" title="Xでシェア">𝕏</a>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="control-panel">
+        <label class="upload-zone" for="audio-file" id="audio-drop">
+          <input id="audio-file" type="file" accept="audio/*" hidden>
+          <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"
+                stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg></span>
+          <span class="upload-copy"><strong id="audio-title">曲を選んでスタート</strong><small
+              id="audio-subtitle">音声ファイルをドロップ、またはクリック</small></span>
+          <span class="upload-arrow" aria-hidden="true">↗</span>
+        </label>
+
+        <div class="settings-heading"><span>ステージ設定</span><span class="settings-rule"></span></div>
+        <div class="setting-row">
+          <div class="setting-label"><span class="setting-icon speed-icon">↗</span><span>再生速度</span></div>
+          <div class="speed-control" aria-label="再生速度">
+            <button class="speed-choice" data-speed="0.5">0.5<span>×</span></button><button class="speed-choice"
+              data-speed="1">1.0<span>×</span></button><button class="speed-choice active"
+              data-speed="1.5">1.5<span>×</span></button><button class="speed-choice"
+              data-speed="2">2.0<span>×</span></button><button class="speed-choice"
+              data-speed="3">3.0<span>×</span></button>
+          </div>
+        </div>
+        <div class="setting-row difficulty-row">
+          <div class="setting-label"><span class="setting-icon diff-icon">✳</span><span>難易度</span></div>
+          <div class="difficulty-control" aria-label="難易度"><button class="difficulty-choice active"
+              data-difficulty="easy"><i></i>簡単</button><button class="difficulty-choice"
+              data-difficulty="normal"><i></i>普通</button><button class="difficulty-choice"
+              data-difficulty="hard"><i></i>難しい</button></div>
+        </div>
+
+        <div class="settings-heading bg-heading"><span>ステージ背景</span><span class="settings-rule"></span></div>
+        <div class="background-control">
+          <button class="background-choice active" data-background="aurora" aria-label="オーロラ" title="Aurora"><span
+              class="bg-swatch aurora-swatch"></span></button>
+          <button class="background-choice" data-background="sunset" aria-label="サンセット" title="Sunset"><span
+              class="bg-swatch sunset-swatch"></span></button>
+          <button class="background-choice" data-background="ocean" aria-label="オーシャン" title="Ocean"><span
+              class="bg-swatch ocean-swatch"></span></button>
+          <label class="background-choice custom-bg" for="image-file" title="画像を選択"><input id="image-file" type="file"
+              accept="image/*" hidden><span class="custom-bg-icon">＋</span><span
+              class="custom-bg-text">画像</span></label>
+          <button class="clear-bg" id="clear-bg" hidden aria-label="選択した背景画像を解除">背景を解除</button>
+        </div>
+
+        <div class="panel-bottom"><span>ファイルは端末内で処理されます</span><span class="version">v1.0</span></div>
+      </aside>
+
+      <section class="game-card" aria-label="ゲームステージ">
+        <div class="stage-background" id="stage-background"></div>
+        <div class="stage-vignette"></div>
+        <div class="stage-topline">
+          <div class="track-label" id="track-label">音楽がロードされていません。</div>
+        </div>
+        <div class="stage-hud">
+          <div class="score-block"><span class="hud-label">スコア</span><span class="score-value" id="score">0000000</span>
+          </div>
+          <div class="combo-block"><span class="combo-value" id="combo">0</span><span class="combo-label">コンボ</span>
+          </div>
+          <div class="best-block"><span class="hud-label">最高スコア</span><span class="best-value" id="best">0000000</span>
+          </div>
+        </div>
+        <div class="playfield" id="playfield"><canvas id="game-canvas" aria-label="3Dリズムゲーム画面"></canvas>
+          <div class="stage-empty" id="stage-empty">
+            <div class="empty-orbit"><span>♫</span><i></i><b></b></div><span class="empty-sub">音楽を選択してください。</span>
+          </div>
+          <div class="judge-line"><span>◈</span><i></i><span>◈</span></div>
+          <div class="hit-flash" id="hit-flash"></div>
+          <div class="judge-text" id="judge-text"></div>
+        </div>
+        <div class="stage-footer">
+          <div class="progress-area"><span class="time-label" id="current-time">00:00</span>
+            <div class="progress-track">
+              <div id="progress-fill"></div>
+            </div><span class="time-label" id="duration">00:00</span>
+          </div>
+          <div class="stage-controls"><span class="key-hint"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd> /
+              でも可能</span><button class="play-button" id="play-button"><span class="play-symbol">▶</span><span
+                id="play-label">遊ぶ</span></button><button class="restart-button" id="restart-button" aria-label="最初から"
+              title="最初から">↺</button></div>
+        </div>
+      </section>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+</body>
+
+</html>
