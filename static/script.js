@@ -8,6 +8,10 @@
   const imageInput = $('#image-file');
   const gameCard = $('.game-card');
   const playfield = $('#playfield');
+  const laneKeys = $('#lane-keys');
+  const laneKeyElements = [...document.querySelectorAll('.lane-key')];
+  const spaceKeyElements = [...document.querySelectorAll('.space-key')];
+  const keyFlashTimers = new Map();
   const audio = new Audio();
   audio.preload = 'metadata';
 
@@ -42,6 +46,21 @@
     if (!Number.isFinite(seconds)) return '00:00';
     const safe = Math.max(0, Math.floor(seconds));
     return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(safe % 60).padStart(2, '0')}`;
+  }
+
+  function isLightTheme() {
+    return document.body.dataset.theme === 'light';
+  }
+
+  function judgeColor(grade) {
+    const light = isLightTheme();
+    return {
+      PERFECT: light ? '#7c47c9' : '#d8aaff',
+      GREAT: light ? '#118a99' : '#8fe8ee',
+      GOOD: light ? '#a06a00' : '#ffe09b',
+      MISS: light ? '#c93d6b' : '#ff8bb0',
+      HOLD: light ? '#118a99' : '#8fe8ee',
+    }[grade];
   }
 
   function showToast(message) {
@@ -112,7 +131,6 @@
     state.imageUrl = URL.createObjectURL(file);
     gameCard.classList.add('custom-background');
     gameCard.style.setProperty('--custom-stage-image', `url("${state.imageUrl}")`);
-    $('.stage-background').style.backgroundImage = `linear-gradient(rgba(10,10,20,.5),rgba(10,10,20,.5)),url("${state.imageUrl}")`;
     document.querySelectorAll('.background-choice[data-background]').forEach((item) => item.classList.remove('active'));
     $('#clear-bg').hidden = false;
     imageInput.value = '';
@@ -352,6 +370,23 @@
     return { width, height, centerX, horizonY, hitY, laneWidth, laneCount, stageWidth, perspectiveOffset };
   }
 
+  function syncLaneKeyGuide(layout) {
+    const laneWidth = `${layout.laneWidth}px`;
+    const laneCount = String(layout.laneCount);
+    if (laneKeys.style.getPropertyValue('--lane-width') !== laneWidth) laneKeys.style.setProperty('--lane-width', laneWidth);
+    if (laneKeys.style.getPropertyValue('--lane-count') !== laneCount) laneKeys.style.setProperty('--lane-count', laneCount);
+    if (laneKeys.dataset.laneCount !== laneCount) laneKeys.dataset.laneCount = laneCount;
+  }
+
+  function flashKeys(elements, id) {
+    const active = elements.filter(Boolean);
+    active.forEach((element) => element.classList.add('pressed'));
+    window.clearTimeout(keyFlashTimers.get(id));
+    keyFlashTimers.set(id, window.setTimeout(() => {
+      active.forEach((element) => element.classList.remove('pressed'));
+    }, 160));
+  }
+
   function laneX(lane, progress, layout) {
     const farWidth = layout.laneWidth * 0.27;
     const nearWidth = layout.laneWidth;
@@ -375,6 +410,8 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
     const layout = getLayout();
+    syncLaneKeyGuide(layout);
+    const light = isLightTheme();
     const now = audio.currentTime || 0;
     const travelTime = 2.35 / state.speed;
     const topY = layout.horizonY;
@@ -388,8 +425,8 @@
     }
 
     const glow = ctx.createRadialGradient(layout.centerX, bottomY, 0, layout.centerX, bottomY, width * 0.48);
-    glow.addColorStop(0, `rgba(155, 113, 241, ${0.08 + pulse * 0.11})`);
-    glow.addColorStop(1, 'rgba(80, 142, 190, 0)');
+    glow.addColorStop(0, light ? `rgba(122, 88, 196, ${0.1 + pulse * 0.08})` : `rgba(155, 113, 241, ${0.08 + pulse * 0.11})`);
+    glow.addColorStop(1, light ? 'rgba(110, 160, 210, 0)' : 'rgba(80, 142, 190, 0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, topY, width, height - topY);
 
@@ -401,8 +438,8 @@
     ctx.lineTo(layout.centerX - layout.stageWidth / 2, bottomY + 10);
     ctx.closePath();
     const floor = ctx.createLinearGradient(0, topY, 0, bottomY);
-    floor.addColorStop(0, 'rgba(177, 143, 255, .025)');
-    floor.addColorStop(1, `rgba(118, 129, 219, ${.085 + pulse * .045})`);
+    floor.addColorStop(0, light ? 'rgba(133, 85, 214, .05)' : 'rgba(177, 143, 255, .025)');
+    floor.addColorStop(1, light ? `rgba(104, 92, 190, ${.12 + pulse * .05})` : `rgba(118, 129, 219, ${.085 + pulse * .045})`);
     ctx.fillStyle = floor;
     ctx.fill();
 
@@ -412,8 +449,11 @@
       ctx.beginPath();
       ctx.moveTo(x1, topY);
       ctx.lineTo(x2, bottomY + 9);
-      ctx.strokeStyle = lane === 0 || lane === layout.laneCount ? 'rgba(177, 159, 233, .3)' : 'rgba(194, 171, 255, .19)';
-      ctx.lineWidth = lane === 0 || lane === layout.laneCount ? 1.2 : 0.8;
+      const edge = lane === 0 || lane === layout.laneCount;
+      ctx.strokeStyle = light
+        ? (edge ? 'rgba(103, 74, 165, .42)' : 'rgba(103, 74, 165, .26)')
+        : (edge ? 'rgba(177, 159, 233, .3)' : 'rgba(194, 171, 255, .19)');
+      ctx.lineWidth = edge ? 1.2 : 0.8;
       ctx.stroke();
     }
 
@@ -424,7 +464,9 @@
       ctx.beginPath();
       ctx.moveTo(layout.centerX - halfWidth, y);
       ctx.lineTo(layout.centerX + halfWidth, y);
-      ctx.strokeStyle = `rgba(182, 159, 239, ${0.045 + fraction * 0.025})`;
+      ctx.strokeStyle = light
+        ? `rgba(103, 74, 165, ${0.08 + fraction * 0.05})`
+        : `rgba(182, 159, 239, ${0.045 + fraction * 0.025})`;
       ctx.lineWidth = 0.7;
       ctx.stroke();
     }
@@ -441,7 +483,9 @@
       const noteWidth = layout.laneWidth * widthScale * (note.long ? 0.82 : 0.72);
       const noteHeight = (9 + 12 * progress) * (note.long ? 2 : 1);
       const x = laneX(note.lane, progress, layout);
-      const color = note.lane % 2 === 0 ? '#b58bff' : '#66dce5';
+      const color = note.lane % 2 === 0
+        ? (light ? '#8555d6' : '#b58bff')
+        : (light ? '#1598a8' : '#66dce5');
       const alpha = Math.max(0.3, Math.min(1, progress * 1.3));
       ctx.save();
       ctx.globalAlpha = alpha;
@@ -462,7 +506,7 @@
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.roundRect(x - noteWidth / 2 + 1, y - noteHeight / 2 + 1, noteWidth - 2, Math.max(2, noteHeight * .34), radius);
-      ctx.fillStyle = 'rgba(255,255,255,.36)';
+      ctx.fillStyle = light ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.36)';
       ctx.fill();
       ctx.restore();
     }
@@ -508,16 +552,17 @@
       localStorage.setItem('neon-best-score', String(state.best));
     }
     updateHud();
-    flashJudge(grade, grade === 'PERFECT' ? '#d8aaff' : grade === 'GREAT' ? '#8fe8ee' : '#ffe09b');
+    flashJudge(grade, judgeColor(grade));
   }
 
   function registerMiss() {
     state.combo = 0;
     updateHud();
-    flashJudge('MISS', '#ff8bb0');
+    flashJudge('MISS', judgeColor('MISS'));
   }
 
   function hitLane(lane) {
+    flashKeys([laneKeyElements[lane]], `lane-${lane}`);
     if (!state.running) return;
     const now = audio.currentTime;
     let candidate = null;
@@ -564,7 +609,7 @@
       if (sustain) {
         state.score += 350;
         updateHud();
-        flashJudge('HOLD +350', '#8fe8ee');
+        flashJudge('HOLD +350', judgeColor('HOLD'));
       }
     }
     state.pointerDown.delete(event.pointerId);
@@ -581,6 +626,7 @@
       hitLane(lane);
     } else if (event.code === 'Space' && state.audioBuffer) {
       event.preventDefault();
+      flashKeys(spaceKeyElements, 'space');
       if (audio.paused) startPlayback();
       else pausePlayback();
     }

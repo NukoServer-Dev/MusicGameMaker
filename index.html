@@ -68,6 +68,22 @@
               data-difficulty="hard"><i></i>難しい</button></div>
         </div>
 
+        <div class="settings-heading controls-heading"><span>キー操作</span><span class="settings-rule"></span></div>
+        <div class="control-guide">
+          <div class="guide-row">
+            <span class="guide-keys"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd></span>
+            <span class="guide-text">左からレーン 1〜4 に対応<small>「簡単」は D・F・J の 3 レーン</small></span>
+          </div>
+          <div class="guide-row">
+            <span class="guide-keys"><kbd class="wide-key space-key">Space</kbd></span>
+            <span class="guide-text">再生 / 一時停止</span>
+          </div>
+          <div class="guide-row">
+            <span class="guide-keys"><kbd class="wide-key">タップ</kbd></span>
+            <span class="guide-text">レーンをクリック・タッチ<small>ロングノートは長押し</small></span>
+          </div>
+        </div>
+
         <div class="settings-heading bg-heading"><span>ステージ背景</span><span class="settings-rule"></span></div>
         <div class="background-control">
           <button class="background-choice active" data-background="aurora" aria-label="オーロラ" title="Aurora"><span
@@ -100,6 +116,12 @@
           </div>
         </div>
         <div class="playfield" id="playfield"><canvas id="game-canvas" aria-label="3Dリズムゲーム画面"></canvas>
+          <div class="lane-keys" id="lane-keys" data-lane-count="3" aria-hidden="true">
+            <div class="lane-key" data-lane="0"><kbd>D</kbd><span>レーン 1</span></div>
+            <div class="lane-key" data-lane="1"><kbd>F</kbd><span>レーン 2</span></div>
+            <div class="lane-key" data-lane="2"><kbd>J</kbd><span>レーン 3</span></div>
+            <div class="lane-key" data-lane="3"><kbd>K</kbd><span>レーン 4</span></div>
+          </div>
           <div class="stage-empty" id="stage-empty">
             <div class="empty-orbit"><span>♫</span><i></i><b></b></div><span class="empty-sub">音楽を選択してください。</span>
           </div>
@@ -113,8 +135,7 @@
               <div id="progress-fill"></div>
             </div><span class="time-label" id="duration">00:00</span>
           </div>
-          <div class="stage-controls"><span class="key-hint"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd> /
-              でも可能</span><button class="play-button" id="play-button"><span class="play-symbol">▶</span><span
+          <div class="stage-controls"><span class="key-hint" aria-label="D F J K はレーン 1 から 4、Space は再生・一時停止"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd><span class="key-hint-text">＝レーン 1〜4　<kbd class="space-key">Space</kbd>＝再生/停止</span></span><button class="play-button" id="play-button"><span class="play-symbol">▶</span><span
                 id="play-label">遊ぶ</span></button><button class="restart-button" id="restart-button" aria-label="最初から"
               title="最初から">↺</button></div>
         </div>
